@@ -8,10 +8,10 @@ dependencies-toml-version = "2"
 distribution-version = "2201.9.0"
 
 [[package]]
-org = "ballerina"
+org = "tharanawanigaratne"
 name = "tool_scan"
-version = "0.1.0"
+version = "0.0.2"
 modules = [
-	{org = "ballerina", packageName = "tool_scan", moduleName = "tool_scan"}
+	{org = "tharanawanigaratne", packageName = "tool_scan", moduleName = "tool_scan"}
 ]
 

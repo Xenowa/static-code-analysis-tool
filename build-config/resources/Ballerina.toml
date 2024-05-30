@@ -1,8 +1,9 @@
 [package]
-org = "ballerina"
+org = "tharanawanigaratne"
 name = "tool_scan"
 version = "@toml.version@"
 distribution = "@toml.distribution@"
-authors = ["Ballerina"]
-keywords = ["scan"]
+authors = ["Tharana"]
+keywords = ["scan", "static code analysis"]
 license = ["Apache-2.0"]
+repository = "https://github.com/Xenowa/static-code-analysis-tool"

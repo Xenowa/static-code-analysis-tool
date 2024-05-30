@@ -26,6 +26,7 @@ plugins {
     id 'java-library'
     id 'checkstyle'
     id 'jacoco'
+    id 'maven-publish'
     id 'com.github.spotbugs'
     id 'de.undercouch.download'
 }
@@ -168,14 +169,15 @@ task validateSpotbugs() {
 spotbugsMain.finalizedBy validateSpotbugs
 
 // Configurations to automatically build and deploy scan tool
+def packageOrg = "tharanawanigaratne"
 def packageName = "tool_scan"
-def tomlVersion = "${project.scanToolVersion}"
+def tomlVersion = "${scanToolVersion}"
 def ballerinaTomlFilePlaceHolder = new File("${rootDir}/build-config/resources/Ballerina.toml")
 def balToolTomlFilePlaceHolder = new File("${rootDir}/build-config/resources/BalTool.toml")
 def ballerinaTomlFile = new File("${projectDir}/tool-scan/Ballerina.toml")
 def balToolTomlFile = new File("${projectDir}/tool-scan/BalTool.toml")
-def balerinaCentralDir = System.getProperty("user.home") + "/.ballerina/repositories/central.ballerina.io/bala/ballerina"
-def ballerinaLocalDir = System.getProperty("user.home") + "/.ballerina/repositories/local/bala/ballerina"
+def balerinaCentralDir = System.getProperty("user.home") + "/.ballerina/repositories/central.ballerina.io/bala/${packageOrg}"
+def ballerinaLocalDir = System.getProperty("user.home") + "/.ballerina/repositories/local/bala/${packageOrg}"
 def balCentralCacheDir = project.file(System.getProperty("user.home") + "/.ballerina/repositories/central.ballerina.io")
 def ballerinaToolConfigDir = System.getProperty("user.home") + "/.ballerina/.config"
 def ballerinaToolConfigToml = System.getProperty("user.home") + "/.ballerina/.config/bal-tools.toml"
@@ -197,9 +199,9 @@ task createBallerinaToolConfigFile {
     def configFileContent = """
         [[tool]]
         id = "scan"
-        org = "ballerina"
-        name = "tool_scan"
-        version = "${project.scanToolVersion}"
+        org = "${packageOrg}"
+        name = "${packageName}"
+        version = "${scanToolVersion}"
         active = true
     """.stripIndent()
 
@@ -215,7 +217,7 @@ task createBallerinaToolConfigFile {
         def tomlFileContent = tomlFile.text
 
         // Regex to identify existing scan tool entry
-        def entryRegex = /\n\[\[tool]]\nid = "scan"\norg = "ballerina"\nname = "tool_scan"\nversion = ".+"\nactive = true/
+        def entryRegex = /\n\[\[tool]]\nid = "scan"\norg = "${packageOrg}"\nname = "${packageName}"\nversion = ".+"\nactive = true/
         def match = tomlFileContent.find(entryRegex)
 
         if (match) {
@@ -316,3 +318,43 @@ task createCodeCoverageReport(type: JacocoReport) {
 }
 
 createCodeCoverageReport.dependsOn(copyExecFilesAndJavaClassFiles)
+
+// Publish the scan tool package to GitHub packages and Ballerina central
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            groupId group
+            artifactId project.name
+            version version
+        }
+    }
+
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/Xenowa/static-code-analysis-tool")
+            credentials {
+                username = System.getenv("publishUser")
+                password = System.getenv("publishPAT")
+            }
+        }
+    }
+}
+
+task publishBallerinaPackage {
+    doLast {
+        exec {
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', 'cd tool-scan & bal pack & bal push'
+            } else {
+                commandLine 'sh', '-c', 'cd tool-scan ; bal pack ; bal push'
+            }
+        }
+        println("Successfully published the scan tool package to central.")
+    }
+}
+
+task release {
+    dependsOn(publishBallerinaPackage)
+}
