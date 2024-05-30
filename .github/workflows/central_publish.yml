@@ -1,7 +1,6 @@
 name: Publish to the Ballerina central
 
 on:
-  push:
   workflow_dispatch:
     inputs:
       environment:

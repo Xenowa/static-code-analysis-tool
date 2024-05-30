@@ -1,7 +1,6 @@
 name: Publish to GitHub package registry
 
 on:
-  push:
   workflow_dispatch:
 
 jobs:
