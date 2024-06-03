@@ -19,11 +19,11 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 task updateVersionScanReport(type: Exec) {
     doFirst {
-        println "update version to " + scanToolVersion
+        println "update version to " + version
         if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-            commandLine 'cmd', '/c', 'npm', 'run', 'update-version', '--', scanToolVersion
+            commandLine 'cmd', '/c', 'npm', 'run', 'update-version', '--', version
         } else {
-            commandLine 'npm', 'run', 'update-version', '--', scanToolVersion
+            commandLine 'npm', 'run', 'update-version', '--', version
         }
     }
 }

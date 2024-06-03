@@ -32,7 +32,7 @@ plugins {
 }
 
 group = "${group}"
-version = "${scanToolVersion}"
+version = "${version}"
 
 repositories {
     mavenLocal()
@@ -171,7 +171,7 @@ spotbugsMain.finalizedBy validateSpotbugs
 // Configurations to automatically build and deploy scan tool
 def packageOrg = "tharanawanigaratne"
 def packageName = "tool_scan"
-def tomlVersion = "${scanToolVersion}"
+def tomlVersion = "${version}"
 def ballerinaTomlFilePlaceHolder = new File("${rootDir}/build-config/resources/Ballerina.toml")
 def balToolTomlFilePlaceHolder = new File("${rootDir}/build-config/resources/BalTool.toml")
 def ballerinaTomlFile = new File("${projectDir}/tool-scan/Ballerina.toml")
@@ -201,7 +201,7 @@ task createBallerinaToolConfigFile {
         id = "scan"
         org = "${packageOrg}"
         name = "${packageName}"
-        version = "${scanToolVersion}"
+        version = "${version}"
         active = true
     """.stripIndent()
 
@@ -319,7 +319,21 @@ task createCodeCoverageReport(type: JacocoReport) {
 
 createCodeCoverageReport.dependsOn(copyExecFilesAndJavaClassFiles)
 
-// Publish the scan tool package to GitHub packages and Ballerina central
+// Publish scan tool package to central
+task publishScanPackage {
+    doLast {
+        exec {
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', 'cd tool-scan & bal pack & bal push'
+            } else {
+                commandLine 'sh', '-c', 'cd tool-scan ; bal pack ; bal push'
+            }
+        }
+        println("Successfully published the scan tool package to central.")
+    }
+}
+
+// Publish scan tool package to GitHub packages
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -342,19 +356,4 @@ publishing {
     }
 }
 
-task publishBallerinaPackage {
-    doLast {
-        exec {
-            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', 'cd tool-scan & bal pack & bal push'
-            } else {
-                commandLine 'sh', '-c', 'cd tool-scan ; bal pack ; bal push'
-            }
-        }
-        println("Successfully published the scan tool package to central.")
-    }
-}
-
-task release {
-    dependsOn(publishBallerinaPackage)
-}
+publish.dependsOn(publishScanPackage)

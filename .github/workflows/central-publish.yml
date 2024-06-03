@@ -1,4 +1,4 @@
-name: Publish to the Ballerina central
+name: Publish to the Ballerina DEV/STAGE central
 
 on:
   workflow_dispatch:
@@ -8,13 +8,12 @@ on:
         description: Select environment
         required: true
         options:
-          - CENTRAL
           - DEV CENTRAL
           - STAGE CENTRAL
 
 jobs:
   central_publish:
-    name: Run central publish workflow
+    name: Run DEV/STAGE central publish workflow
     runs-on: ubuntu-latest
 
     if: github.repository_owner == 'xenowa'
@@ -33,25 +32,11 @@ jobs:
         with:
           version: latest
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build without tests
+      - name: Build with Gradle
         env:
           packageUser: ${{ github.actor }}
           packagePAT: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew build -x check -x test
-
-      - name: Ballerina Central Push
-        if: ${{ inputs.environment == 'CENTRAL' }}
-        env:
-          BALLERINA_DEV_CENTRAL: false
-          BALLERINA_STAGE_CENTRAL: false
-          BALLERINA_CENTRAL_ACCESS_TOKEN: ${{ secrets.BALLERINA_CENTRAL_ACCESS_TOKEN }}
-          packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
-          packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
-        run: ./gradlew release -PpublishToCentral=true
+        run: ./gradlew build
 
       - name: Ballerina Central Dev Push
         if: ${{ inputs.environment == 'DEV CENTRAL' }}
@@ -62,7 +47,7 @@ jobs:
           packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
           packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
-        run: ./gradlew release
+        run: ./gradlew publishScanPackage
 
       - name: Ballerina Central Stage Push
         if: ${{ inputs.environment == 'STAGE CENTRAL' }}
@@ -73,4 +58,4 @@ jobs:
           packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
           packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
-        run: ./gradlew release
+        run: ./gradlew publishScanPackage
