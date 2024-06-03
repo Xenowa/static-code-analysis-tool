@@ -15,6 +15,6 @@ release {
     }
 }
 
-task build{
+tasks.register('build') {
     dependsOn 'scan-command:build'
 }

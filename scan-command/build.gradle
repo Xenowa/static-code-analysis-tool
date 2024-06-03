@@ -21,8 +21,6 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import java.nio.file.Paths
 
 plugins {
-    id 'java'
-    id 'application'
     id 'java-library'
     id 'checkstyle'
     id 'jacoco'
@@ -86,7 +84,7 @@ tasks.withType(JavaExec).configureEach {
 }
 
 // Setting up checkstyles
-task downloadCheckstyleRuleFiles(type: Download) {
+tasks.register('downloadCheckstyleRuleFiles', Download) {
     src([
             'https://raw.githubusercontent.com/wso2/code-quality-tools/v1.4/checkstyle/jdk-17/checkstyle.xml',
             'https://raw.githubusercontent.com/wso2/code-quality-tools/v1.4/checkstyle/jdk-17/suppressions.xml'
@@ -153,7 +151,7 @@ spotbugsTest {
     }
 }
 
-task validateSpotbugs() {
+tasks.register('validateSpotbugs') {
     doLast {
         if (spotbugsMain.reports.size() > 0 && spotbugsMain.reports[0].destination.exists() &&
                 spotbugsMain.reports[0].destination.text.readLines().size() > 0) {
@@ -182,7 +180,7 @@ def balCentralCacheDir = project.file(System.getProperty("user.home") + "/.balle
 def ballerinaToolConfigDir = System.getProperty("user.home") + "/.ballerina/.config"
 def ballerinaToolConfigToml = System.getProperty("user.home") + "/.ballerina/.config/bal-tools.toml"
 
-task updateTomlFiles {
+tasks.register('updateTomlFiles') {
     // Update the Ballerina.toml and BalTool.toml files
     doLast {
         def newConfig = ballerinaTomlFilePlaceHolder.text.replace("@toml.distribution@", project.ballerinaLangVersion)
@@ -194,7 +192,7 @@ task updateTomlFiles {
     }
 }
 
-task createBallerinaToolConfigFile {
+tasks.register('createBallerinaToolConfigFile') {
     // Create the bal-tools.toml file in the .ballerina/.config directory
     def configFileContent = """
         [[tool]]
@@ -236,7 +234,7 @@ task createBallerinaToolConfigFile {
     }
 }
 
-task buildScanTool {
+tasks.register('buildScanTool') {
     doLast {
         // Pack and push to local repo of distribution
         exec {
@@ -290,10 +288,9 @@ tasks.test {
 }
 
 // Codecove configurations
-def execFile;
+def execFile = new File("${buildDir}/jacoco/test.exec");
 def classFileArray = []
-task copyExecFilesAndJavaClassFiles {
-    execFile = new File("${buildDir}/jacoco/test.exec")
+tasks.register('copyExecFilesAndJavaClassFiles') {
     if (execFile.exists()) {
         fileTree("${buildDir}/classes").matching {
             exclude '**/test/*'
@@ -302,7 +299,7 @@ task copyExecFilesAndJavaClassFiles {
     }
 }
 
-task createCodeCoverageReport(type: JacocoReport) {
+tasks.register('createCodeCoverageReport', JacocoReport) {
     executionData file(execFile)
     additionalClassDirs files(classFileArray)
 
@@ -319,8 +316,7 @@ task createCodeCoverageReport(type: JacocoReport) {
 
 createCodeCoverageReport.dependsOn(copyExecFilesAndJavaClassFiles)
 
-// Publish scan tool package to central
-task publishScanPackage {
+tasks.register('publishScanPackage') {
     doLast {
         exec {
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
