@@ -16,7 +16,7 @@ jobs:
     name: Run DEV/STAGE central publish workflow
     runs-on: ubuntu-latest
 
-    if: github.repository_owner == 'ballerina-platform'
+    if: github.repository_owner == 'Xenowa'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
