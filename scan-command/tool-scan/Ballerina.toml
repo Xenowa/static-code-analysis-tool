@@ -1,7 +1,7 @@
 [package]
 org = "tharanawanigaratne"
 name = "tool_scan"
-version = "0.0.4"
+version = "0.0.5"
 distribution = "2201.9.1"
 authors = ["tharanawanigaratne"]
 keywords = ["scan", "static code analysis"]
