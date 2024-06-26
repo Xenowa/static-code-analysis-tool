@@ -10,7 +10,7 @@ distribution-version = "2201.9.1"
 [[package]]
 org = "tharanawanigaratne"
 name = "tool_scan"
-version = "0.0.5"
+version = "0.0.6"
 modules = [
 	{org = "tharanawanigaratne", packageName = "tool_scan", moduleName = "tool_scan"}
 ]
